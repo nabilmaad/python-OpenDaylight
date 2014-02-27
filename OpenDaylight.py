@@ -126,8 +126,6 @@ class OpenDaylight(object):
         # stuff an HTTPBasicAuth object in here ready for use
         self.auth = HTTPBasicAuth(self.setup['username'], 
                                   self.setup['password'])
-        #print("Prepare set up auth: " + self.setup['username'] + ', ' + \
-        #      self.setup['password'])
 
 
 class OpenDaylightFlow(object):
@@ -188,7 +186,7 @@ class OpenDaylightFlow(object):
             self.flows = self.request.json()
             if 'flowConfig' in self.flows:
                 self.flows = self.flows.get('flowConfig')
-	    print(self.flows)
+
         else:
             raise OpenDaylightError({'url':self.odl.url, 
                                      'http_code':self.request.status_code,
@@ -202,7 +200,6 @@ class OpenDaylightFlow(object):
         """
         if hasattr(self, 'request'):
             del self.request
-        #print(flow)
         self.odl.prepare(self.__app, '/node/' + flow['node']['type'] + '/' + 
                      flow['node']['id'] + '/staticFlow/' + flow['name'] + '/')	
         headers = {'Content-type': 'application/json'}
