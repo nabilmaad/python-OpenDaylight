@@ -21,6 +21,10 @@ Copyright 2013 The University of Wisconsin Board of Regents
  Division of Information Technology
  University of Wisconsin at Madison
 
+Modified & updated by: Nabil Maadarani, nmaadara@cisco.com
+Cisco Science Network
+Cisco Systems
+
 This material is based upon work supported by the National Science Foundation 
 under Grant No.  1247322. 
 """
@@ -103,6 +107,7 @@ class OpenDaylight(object):
 
         # the specific path we are building
         self.url = self._base_url + app + '/' + self.setup['container'] + path
+        #self.url = self._base_url + app + '/' + path + self.setup['container']
 
     def prepare_auth(self):
         """Set up the credentials for the REST connection by creating
@@ -150,7 +155,7 @@ class OpenDaylightFlow(object):
             odl      - an OpenDaylight object
         """
         self.odl = odl
-        self.__app = 'flow'
+        self.__app = 'flowprogrammer'
         self.request = None
         self.flows = None
 
@@ -170,7 +175,7 @@ class OpenDaylightFlow(object):
             del self.flows
 
         if node_id is None:
-            self.odl.prepare(self.__app, '/')
+            self.odl.prepare(self.__app, '/flow')
         elif flow_name is None:
             self.odl.prepare(self.__app, '/' + 'OF/' + node_id + '/')
         else:
@@ -183,6 +188,7 @@ class OpenDaylightFlow(object):
             self.flows = self.request.json()
             if 'flowConfig' in self.flows:
                 self.flows = self.flows.get('flowConfig')
+	    print(self.flows)
         else:
             raise OpenDaylightError({'url':self.odl.url, 
                                      'http_code':self.request.status_code,
@@ -197,11 +203,11 @@ class OpenDaylightFlow(object):
         if hasattr(self, 'request'):
             del self.request
         #print(flow)
-        self.odl.prepare(self.__app, '/' + flow['node']['@type'] + '/' + 
-                     flow['node']['@id'] + '/' + flow['name'] + '/')
+        self.odl.prepare(self.__app, '/node/' + flow['node']['type'] + '/' + 
+                     flow['node']['id'] + '/staticFlow/' + flow['name'] + '/')	
         headers = {'Content-type': 'application/json'}
         body = json.dumps(flow)
-        self.request = requests.post(url=self.odl.url, auth=self.odl.auth,
+        self.request = requests.put(url=self.odl.url, auth=self.odl.auth,
                                      data=body, headers=headers)
 
         if self.request.status_code != 201:
@@ -224,7 +230,7 @@ class OpenDaylightFlow(object):
         if hasattr(self, 'request'):
             del self.request
 
-        self.odl.prepare(self.__app, '/' + 'OF/' + node_id + '/' + 
+        self.odl.prepare(self.__app, '/node/' + 'OF/' + node_id + '/staticFlow/' + 
                          flow_name + '/')
         self.request = requests.delete(url=self.odl.url, auth=self.odl.auth)
 
@@ -234,7 +240,7 @@ class OpenDaylightFlow(object):
         #self.prepare(self.__app, '/' + flow['node']['@type'] + '/' + 
         #             flow['node']['@id'] + '/' + flow['name'] + '/')
 
-        if self.request.status_code != 200:
+        if self.request.status_code != 204:
             raise OpenDaylightError({'url':self.odl.url, 
                                      'http_code':self.request.status_code,
                                      'msg':self.request.text})
